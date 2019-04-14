@@ -130,7 +130,7 @@ if __name__ == '__main__':
     my_filtered_csv = pd.read_csv('url_list.csv', usecols=['URL'])
     i = 0
     for row in my_filtered_csv['URL']:
-        if i == 5:
+        if i == 150:
             break
         urls.append('https://' + row)
         i = i+1
