@@ -7,6 +7,9 @@ from bs4 import BeautifulSoup
 import csv
 import pandas as pd
 import re
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import numpy as np
+import matplotlib.pyplot as plt
 
 class ComputerSecurityScraping:
     eu_pattern_list = ['EU-US', 'EFTA', 'Swiss-US', 'Privacy Shield', 'EU-U.S.', 'Swiss-U.S.', 'EEA']
@@ -17,7 +20,6 @@ class ComputerSecurityScraping:
     dnt_pattern = re.compile('|'.join(dnt_pattern_list))
     gdpr_pattern = re.compile('|'.join(gdpr_pattern_list))
     cali_pattern = re.compile('|'.join(cali_pattern_list))
-
     privacy_list = ['Privacy', 'privacy', 'PRIVACY']
 
     def __init__(self, urls):
@@ -33,6 +35,7 @@ class ComputerSecurityScraping:
             gdpr_list = []
             cali_list = []
             num_links = 0
+            exception = False
             try:
                 driver.get(url)
             except (exceptions.StaleElementReferenceException, exceptions.ElementClickInterceptedException, exceptions.WebDriverException, exceptions.ElementNotInteractableException) as e:
@@ -45,7 +48,8 @@ class ComputerSecurityScraping:
                     link = temp
                     num_links = len(temp)
                     break
-
+            if num_links == 0:
+                continue
 
             for i in range(num_links):
                 # navigate to link
@@ -54,7 +58,11 @@ class ComputerSecurityScraping:
                     break
                 except (exceptions.StaleElementReferenceException, exceptions.ElementClickInterceptedException, exceptions.WebDriverException, exceptions.ElementNotInteractableException) as e:
                     print(url + ' ' + str(e))
+                    exception = True
                     continue
+
+            if exception:
+                continue
 
             print(url + ' ' + str(num_links))
 
@@ -129,6 +137,7 @@ class ComputerSecurityScraping:
             self.dict[url] = {'EU-US Privacy Shield': eu_list, 'DNT': dnt_list, 'GDPR': gdpr_list, 'CalOPPA': cali_list}
         driver.close()
         self.write_to_table()
+        self.graph_info()
 
     def write_to_table(self):
         with open('privacy_policy_info.csv', 'w', newline='') as csvfile:
@@ -139,15 +148,39 @@ class ComputerSecurityScraping:
             for item in self.dict.keys():
                 writer.writerow({'URL': item, 'EU-US Privacy Shield': self.dict[item]['EU-US Privacy Shield'], 'Do Not Track': self.dict[item]['DNT'], 'GDPR': self.dict[item]['GDPR'], 'CalOPPA': self.dict[item]['CalOPPA']})
 
+    def graph_info(self):
+        total_urls = 0
+        gdpr_total = 0
+        cali_total = 0
+        dnt_total = 0
+        eu_total = 0
+
+        for key in self.dict.keys():
+            total_urls = total_urls + 1
+            if len(self.dict[key]['EU-US Privacy Shield']) != 0:
+                eu_total = eu_total + 1
+            if len(self.dict[key]['DNT']) != 0:
+                dnt_total = dnt_total + 1
+            if len(self.dict[key]['GDPR']) != 0:
+                gdpr_total = gdpr_total + 1
+            if len(self.dict[key]['CalOPPA']) != 0:
+                cali_total = cali_total + 1
+
+        objects = ('EU-US Privacy Shield', 'Do Not Track', 'GDPR', 'CalOPPA')
+        y_pos = np.arange(len(objects))
+        performance = [eu_total, dnt_total, gdpr_total, cali_total]
+
+        plt.bar(y_pos, performance, align='center', alpha=1)
+        plt.xticks(y_pos, objects)
+        plt.ylabel('Amount of Privacy Policies')
+        plt.title('Privacy Protocols Among Top Domains')
+
+        plt.show()
 
 if __name__ == '__main__':
     urls = []
     my_filtered_csv = pd.read_csv('url_list.csv', usecols=['URL'])
-    i = 0
     for row in my_filtered_csv['URL']:
-        if i == 200:
-            break
         urls.append('https://' + row)
-        i = i+1
     scrape = ComputerSecurityScraping(urls)
     scrape.scrapePages()
