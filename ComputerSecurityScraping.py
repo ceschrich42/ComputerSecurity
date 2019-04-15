@@ -9,12 +9,14 @@ import pandas as pd
 import re
 
 class ComputerSecurityScraping:
-    eu_pattern_list = ['EU-US', 'EFTA', 'Swiss-US', 'Privacy Shield', 'EU-U.S.', 'Swiss-U.S.']
+    eu_pattern_list = ['EU-US', 'EFTA', 'Swiss-US', 'Privacy Shield', 'EU-U.S.', 'Swiss-U.S.', 'EEA']
     dnt_pattern_list = ['DNT', 'Do Not Track', 'Do-Not-Track', 'do not allow tracking']
-    gdpr_pattern_list = ['GDPR', 'EEA' 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information', 'restrict access', 'control who sees what', 'choices about how your data is collected']
+    gdpr_pattern_list = ['GDPR', 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information', 'restrict access', 'control who sees what', 'choices about how your data is collected']
+    cali_pattern_list = ['California Online Privacy', 'California privacy', 'California Privacy', 'CalOPPA']
     eu_pattern = re.compile('|'.join(eu_pattern_list))
     dnt_pattern = re.compile('|'.join(dnt_pattern_list))
     gdpr_pattern = re.compile('|'.join(gdpr_pattern_list))
+    cali_pattern = re.compile('|'.join(cali_pattern_list))
 
     privacy_list = ['Privacy', 'privacy', 'PRIVACY']
 
@@ -29,6 +31,7 @@ class ComputerSecurityScraping:
             eu_list = []
             dnt_list = []
             gdpr_list = []
+            cali_list = []
             num_links = 0
             try:
                 driver.get(url)
@@ -58,7 +61,6 @@ class ComputerSecurityScraping:
             page_source = driver.execute_script("return document.documentElement.innerHTML;")
 
             soup = BeautifulSoup(page_source, 'html.parser')
-            print(soup.find_all('p'))
 
             p = soup.find_all('p', text=self.eu_pattern)
             if len(p):
@@ -76,8 +78,6 @@ class ComputerSecurityScraping:
             if len(h2):
                 eu_list.append(h2)
 
-            print(eu_list)
-
             p = soup.find_all('p', text=self.dnt_pattern)
             if len(p):
                 dnt_list.append(p)
@@ -93,8 +93,6 @@ class ComputerSecurityScraping:
             h2 = soup.find_all('h2', text=self.dnt_pattern)
             if len(h2):
                 dnt_list.append(h2)
-
-            print(dnt_list)
 
             p = soup.find_all('p', text=self.gdpr_pattern)
             if len(p):
@@ -112,20 +110,34 @@ class ComputerSecurityScraping:
             if len(h2):
                 gdpr_list.append(h2)
 
-            print(gdpr_list)
+            p = soup.find_all('p', text=self.cali_pattern)
+            if len(p):
+                cali_list.append(p)
+            div = soup.find_all('div', text=self.cali_pattern)
+            if len(div):
+                cali_list.append(div)
+            a = soup.find_all('a', text=self.cali_pattern)
+            if len(a):
+                cali_list.append(a)
+            li = soup.find_all('li', text=self.cali_pattern)
+            if len(li):
+                cali_list.append(li)
+            h2 = soup.find_all('h2', text=self.cali_pattern)
+            if len(h2):
+                cali_list.append(h2)
 
-            self.dict[url] = {'EU-US Privacy Shield': eu_list, 'DNT': dnt_list, 'GDPR': gdpr_list}
+            self.dict[url] = {'EU-US Privacy Shield': eu_list, 'DNT': dnt_list, 'GDPR': gdpr_list, 'CalOPPA': cali_list}
         driver.close()
         self.write_to_table()
 
     def write_to_table(self):
         with open('privacy_policy_info.csv', 'w', newline='') as csvfile:
-            fieldnames = ['URL', 'EU-US Privacy Shield', 'Do Not Track', 'GDPR']
+            fieldnames = ['URL', 'EU-US Privacy Shield', 'Do Not Track', 'GDPR', 'CalOPPA']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             writer.writeheader()
             for item in self.dict.keys():
-                writer.writerow({'URL': item, 'EU-US Privacy Shield': self.dict[item]['EU-US Privacy Shield'], 'Do Not Track': self.dict[item]['DNT'], 'GDPR': self.dict[item]['GDPR']})
+                writer.writerow({'URL': item, 'EU-US Privacy Shield': self.dict[item]['EU-US Privacy Shield'], 'Do Not Track': self.dict[item]['DNT'], 'GDPR': self.dict[item]['GDPR'], 'CalOPPA': self.dict[item]['CalOPPA']})
 
 
 if __name__ == '__main__':
@@ -133,7 +145,7 @@ if __name__ == '__main__':
     my_filtered_csv = pd.read_csv('url_list.csv', usecols=['URL'])
     i = 0
     for row in my_filtered_csv['URL']:
-        if i == 100:
+        if i == 200:
             break
         urls.append('https://' + row)
         i = i+1
