@@ -11,10 +11,10 @@ import re
 class ComputerSecurityScraping:
     eu_pattern_list = ['EU-US', 'EFTA', 'Swiss-US', 'Privacy Shield', 'EU-U.S.', 'Swiss-U.S.']
     dnt_pattern_list = ['DNT', 'Do Not Track', 'Do-Not-Track']
-    gdpa_pattern_list = ['GDPA', 'EEA' 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information']
+    gdpr_pattern_list = ['GDPR', 'EEA' 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information']
     eu_pattern = re.compile('|'.join(eu_pattern_list))
     dnt_pattern = re.compile('|'.join(dnt_pattern_list))
-    gdpa_pattern = re.compile('|'.join(gdpa_pattern_list))
+    gdpr_pattern = re.compile('|'.join(gdpr_pattern_list))
 
     privacy_list = ['Privacy', 'privacy', 'PRIVACY']
 
@@ -28,7 +28,7 @@ class ComputerSecurityScraping:
         for url in self.urls:
             eu_list = []
             dnt_list = []
-            gdpa_list = []
+            gdpr_list = []
             num_links = 0
             try:
                 driver.get(url)
@@ -93,36 +93,36 @@ class ComputerSecurityScraping:
 
             print(dnt_list)
 
-            p = soup.find_all('p', text=self.gdpa_pattern)
+            p = soup.find_all('p', text=self.gdpr_pattern)
             if len(p):
-                gdpa_list.append(p)
-            div = soup.find_all('div', text=self.gdpa_pattern)
+                gdpr_list.append(p)
+            div = soup.find_all('div', text=self.gdpr_pattern)
             if len(div):
-                gdpa_list.append(div)
-            a = soup.find_all('a', text=self.gdpa_pattern)
+                gdpr_list.append(div)
+            a = soup.find_all('a', text=self.gdpr_pattern)
             if len(a):
-                gdpa_list.append(a)
-            li = soup.find_all('li', text=self.gdpa_pattern)
+                gdpr_list.append(a)
+            li = soup.find_all('li', text=self.gdpr_pattern)
             if len(li):
-                gdpa_list.append(li)
-            h2 = soup.find_all('h2', text=self.gdpa_pattern)
+                gdpr_list.append(li)
+            h2 = soup.find_all('h2', text=self.gdpr_pattern)
             if len(h2):
-                gdpa_list.append(h2)
+                gdpr_list.append(h2)
 
-            print(gdpa_list)
+            print(gdpr_list)
 
-            self.dict[url] = {'EU-US Privacy Shield': eu_list, 'DNT': dnt_list, 'GDPA': gdpa_list}
+            self.dict[url] = {'EU-US Privacy Shield': eu_list, 'DNT': dnt_list, 'GDPR': gdpr_list}
         driver.close()
         self.write_to_table()
 
     def write_to_table(self):
         with open('privacy_policy_info.csv', 'w', newline='') as csvfile:
-            fieldnames = ['URL', 'EU-US Privacy Shield', 'Do Not Track', 'GDPA']
+            fieldnames = ['URL', 'EU-US Privacy Shield', 'Do Not Track', 'GDPR']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             writer.writeheader()
             for item in self.dict.keys():
-                writer.writerow({'URL': item, 'EU-US Privacy Shield': self.dict[item]['EU-US Privacy Shield'], 'Do Not Track': self.dict[item]['DNT'], 'GDPA': self.dict[item]['GDPA']})
+                writer.writerow({'URL': item, 'EU-US Privacy Shield': self.dict[item]['EU-US Privacy Shield'], 'Do Not Track': self.dict[item]['DNT'], 'GDPR': self.dict[item]['GDPR']})
 
 
 if __name__ == '__main__':
