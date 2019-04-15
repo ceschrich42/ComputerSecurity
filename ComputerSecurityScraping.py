@@ -10,8 +10,8 @@ import re
 
 class ComputerSecurityScraping:
     eu_pattern_list = ['EU-US', 'EFTA', 'Swiss-US', 'Privacy Shield', 'EU-U.S.', 'Swiss-U.S.']
-    dnt_pattern_list = ['DNT', 'Do Not Track', 'Do-Not-Track']
-    gdpr_pattern_list = ['GDPR', 'EEA' 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information']
+    dnt_pattern_list = ['DNT', 'Do Not Track', 'Do-Not-Track', 'do not allow tracking']
+    gdpr_pattern_list = ['GDPR', 'EEA' 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information', 'restrict access', 'control who sees what', 'choices about how your data is collected']
     eu_pattern = re.compile('|'.join(eu_pattern_list))
     dnt_pattern = re.compile('|'.join(dnt_pattern_list))
     gdpr_pattern = re.compile('|'.join(gdpr_pattern_list))
@@ -55,7 +55,10 @@ class ComputerSecurityScraping:
 
             print(url + ' ' + str(num_links))
 
-            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            page_source = driver.execute_script("return document.documentElement.innerHTML;")
+
+            soup = BeautifulSoup(page_source, 'html.parser')
+            print(soup.find_all('p'))
 
             p = soup.find_all('p', text=self.eu_pattern)
             if len(p):
@@ -130,7 +133,7 @@ if __name__ == '__main__':
     my_filtered_csv = pd.read_csv('url_list.csv', usecols=['URL'])
     i = 0
     for row in my_filtered_csv['URL']:
-        if i == 150:
+        if i == 100:
             break
         urls.append('https://' + row)
         i = i+1
