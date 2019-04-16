@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 class ComputerSecurityScraping:
     eu_pattern_list = ['EU-US', 'EFTA', 'Swiss-US', 'Privacy Shield', 'EU-U.S.', 'Swiss-U.S.', 'EEA']
     dnt_pattern_list = ['DNT', 'Do Not Track', 'Do-Not-Track', 'do not allow tracking']
-    gdpr_pattern_list = ['GDPR', 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information', 'restrict access', 'control who sees what', 'choices about how your data is collected']
+    gdpr_pattern_list = ['GDPR', 'Control Information', 'Manage information', 'Delete Information', 'Manage Your Data', 'Delete Your Data', 'control information', 'manage your data', 'update your information', 'restrict access', 'control who sees what', 'choices about how your data is collected', 'Data subject rights', 'right to be forgotten', 'Lawful bases of personal data processing', 'right to complain', 'retention periods']
     cali_pattern_list = ['California Online Privacy', 'California privacy', 'California Privacy', 'CalOPPA']
     eu_pattern = re.compile('|'.join(eu_pattern_list))
     dnt_pattern = re.compile('|'.join(dnt_pattern_list))
